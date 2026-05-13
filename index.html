@@ -1,0 +1,602 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Портфолио ХортсВи</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #2a2a2a;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            padding: 40px 32px 60px 32px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* навигация */
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 48px;
+            flex-wrap: wrap;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            gap: 8px;
+        }
+
+            .nav-item:hover {
+                transform: translateY(-3px);
+            }
+
+        .nav-icon {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+            opacity: 0.6;
+            transition: opacity 0.2s ease;
+        }
+
+        .nav-item.active .nav-icon {
+            opacity: 1;
+            filter: drop-shadow(0 0 4px rgba(0,0,0,0.4));
+        }
+
+        .nav-label {
+            font-size: 0.8rem;
+            color: #cccccc;
+        }
+
+        .nav-item.active .nav-label {
+            color: white;
+            font-weight: 500;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+            .page-title h1 {
+                font-size: 2rem;
+                font-weight: 400;
+                color: #e8e8e8;
+                background: rgba(0,0,0,0.3);
+                display: inline-block;
+                padding: 8px 32px;
+                border-radius: 40px;
+            }
+
+        /* галерея */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 32px;
+            justify-items: center;
+            align-items: start;
+        }
+
+        .gallery-item {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+            .gallery-item:hover {
+                transform: scale(1.01);
+            }
+
+        .gallery-img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            background-color: #1e1e1e;
+            display: block;
+        }
+
+        /* страница об авторе */
+        .about-section {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .about-text {
+            text-align: left;
+            color: #f0f0f0;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 48px;
+            background: rgba(0,0,0,0.2);
+            padding: 28px 32px;
+            border-radius: 20px;
+        }
+
+        .featured-title {
+            text-align: left;
+            font-size: 1.6rem;
+            font-weight: 500;
+            color: #dddddd;
+            margin-bottom: 24px;
+            border-left: 4px solid #aaa;
+            padding-left: 20px;
+        }
+
+        .featured-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 28px;
+            justify-items: center;
+        }
+
+        /* контакты */
+        .contacts-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .contact-block {
+            background: rgba(0,0,0,0.25);
+            padding: 24px 32px;
+            border-radius: 24px;
+            text-align: left;
+        }
+
+            .contact-block h3 {
+                font-size: 1.7rem;
+                font-weight: 500;
+                color: #e0e0e0;
+                margin-bottom: 20px;
+                border-left: 4px solid #bbb;
+                padding-left: 18px;
+            }
+
+        .contact-line {
+            font-size: 1.1rem;
+            margin: 14px 0;
+            color: #ececec;
+        }
+
+            .contact-line strong {
+                min-width: 100px;
+                display: inline-block;
+                font-weight: 500;
+                color: #cccccc;
+            }
+
+            .contact-line a {
+                color: #e6e6e6;
+                text-decoration: none;
+                border-bottom: 1px dashed #888;
+            }
+
+                .contact-line a:hover {
+                    color: white;
+                    border-bottom-color: white;
+                }
+
+        /* ===== МОДАЛЬНОЕ ОКНО (зум только колесиком + drag) ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.96);
+            z-index: 1000;
+            cursor: default;
+        }
+
+            .modal.active {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+        .zoom-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .zoom-img {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            transition: transform 0.05s linear;
+            cursor: grab;
+            user-select: none;
+        }
+
+            .zoom-img:active {
+                cursor: grabbing;
+            }
+
+        /* крестик закрытия */
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 44px;
+            color: white;
+            cursor: pointer;
+            z-index: 1010;
+            background: rgba(0,0,0,0.5);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: 0.2s;
+            font-family: monospace;
+        }
+
+            .close-modal:hover {
+                background: rgba(255,255,255,0.2);
+                transform: scale(1.05);
+            }
+
+        .page-content {
+            display: none;
+            animation: fade 0.25s ease;
+        }
+
+            .page-content.active-page {
+                display: block;
+            }
+
+        @keyframes fade {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 16px 40px 16px;
+            }
+
+            .nav {
+                gap: 20px;
+            }
+
+            .nav-icon {
+                width: 44px;
+                height: 44px;
+            }
+
+            .nav-label {
+                font-size: 0.7rem;
+            }
+
+            .gallery {
+                gap: 20px;
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            }
+
+            .close-modal {
+                width: 40px;
+                height: 40px;
+                font-size: 36px;
+                top: 12px;
+                right: 16px;
+            }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            color: #6a6a6a;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="nav" id="navBar">
+            <div class="nav-item" data-page="gallery">
+                <img src="icons/gallery.png" class="nav-icon" alt="галерея">
+                <span class="nav-label">Галерея</span>
+            </div>
+            <div class="nav-item" data-page="fullworks">
+                <img src="icons/works.png" class="nav-icon" alt="работы">
+                <span class="nav-label">Полноценные</span>
+            </div>
+            <div class="nav-item" data-page="sketches">
+                <img src="icons/sketches.png" class="nav-icon" alt="наброски">
+                <span class="nav-label">Наброски</span>
+            </div>
+            <div class="nav-item" data-page="about">
+                <img src="icons/about.png" class="nav-icon" alt="об авторе">
+                <span class="nav-label">Об авторе</span>
+            </div>
+            <div class="nav-item" data-page="contacts">
+                <img src="icons/contacts.png" class="nav-icon" alt="контакты">
+                <span class="nav-label">Контакты</span>
+            </div>
+        </div>
+
+        <div class="page-title">
+            <h1 id="dynamicTitle">Галерея</h1>
+        </div>
+
+        <div id="galleryPage" class="page-content active-page">
+            <div class="gallery" id="galleryContainer"></div>
+        </div>
+        <div id="fullworksPage" class="page-content">
+            <div class="gallery" id="fullworksContainer"></div>
+        </div>
+        <div id="sketchesPage" class="page-content">
+            <div class="gallery" id="sketchesContainer"></div>
+        </div>
+        <div id="aboutPage" class="page-content">
+            <div class="about-section">
+                <div class="about-text">
+                    Я Хортсви, диджитал-артист. Работаю преимущественно в таких программах, как Krita и IbisPaint X. Художник-самоучка, занимаюсь рисованием в течении двух лет, нахожусь в поиске своего стиля и акцента в работах. Занимаюсь рисованием, чтобы воплотить свои идеи и видение персонажей в жизнь.
+                </div>
+                <div class="featured-title">Избранные работы</div>
+                <div class="featured-gallery" id="featuredContainer"></div>
+            </div>
+        </div>
+        <div id="contactsPage" class="page-content">
+            <div class="contacts-wrapper">
+                <div class="contact-block">
+                    <h3>📞 Контакты</h3>
+                    <div class="contact-line"><strong>Телефон:</strong> <a href="tel:+79511802646">+7(951)180-26-46</a></div>
+                    <div class="contact-line"><strong>Telegram:</strong> <a href="https://t.me/HortsVi" target="_blank">@HortsVi</a></div>
+                    <div class="contact-line"><strong>VK:</strong> <a href="https://vk.com/HortsVi" target="_blank">@HortsVi</a></div>
+                </div>
+                <div class="contact-block">
+                    <h3>🌐 Социальные сети</h3>
+                    <div class="contact-line"><strong>Telegram-канал:</strong> <a href="https://t.me/HortsV1" target="_blank">@HortsV1</a></div>
+                    <div class="contact-line"><strong>TikTok:</strong> <a href="https://tiktok.com/@HortsVi" target="_blank">@HortsVi</a></div>
+                    <div class="contact-line"><strong>Tumblr:</strong> <a href="https://tumblr.com/@HortsVi" target="_blank">@HortsVi</a></div>
+                </div>
+            </div>
+        </div>
+        <footer>© Хортсви — цифровой арт</footer>
+    </div>
+
+    <!-- Модальное окно с зумом (только колесико + drag, без кнопок) -->
+    <div id="imageModal" class="modal">
+        <div class="zoom-container" id="zoomContainer">
+            <img class="zoom-img" id="modalImage" src="" alt="Увеличенное изображение">
+        </div>
+        <div class="close-modal" id="closeModalBtn">&times;</div>
+    </div>
+
+    <script>
+        // ---------- ИЗОБРАЖЕНИЯ ----------
+        const fullImages = [];
+        for (let i = 1; i <= 12; i++) fullImages.push(`images/п${i}.png`);
+        const sketchImages = [];
+        for (let i = 1; i <= 8; i++) sketchImages.push(`images/н${i}.png`);
+        const allImages = [...fullImages, ...sketchImages];
+        const featuredImages = ['images/п1.png', 'images/п2.png', 'images/п4.png', 'images/п5.png', 'images/п10.png'];
+
+        function renderGallery(containerId, imageArray) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            imageArray.forEach(src => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = 'работа';
+                img.className = 'gallery-img';
+                img.loading = 'lazy';
+                img.addEventListener('click', () => openModalWithZoom(src));
+                item.appendChild(img);
+                container.appendChild(item);
+            });
+        }
+
+        // ---------- ЗУМ: ТОЛЬКО КОЛЕСИКО + ПЕРЕТАСКИВАНИЕ ----------
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        let currentScale = 1;
+        let translateX = 0, translateY = 0;
+
+        function updateTransform() {
+            modalImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
+        }
+
+        function resetZoom() {
+            currentScale = 1;
+            translateX = 0;
+            translateY = 0;
+            updateTransform();
+        }
+
+        function zoomIn() {
+            if (currentScale < 4) {
+                currentScale = Math.min(4, currentScale + 0.25);
+                updateTransform();
+            }
+        }
+
+        function zoomOut() {
+            if (currentScale > 0.6) {
+                currentScale = Math.max(0.6, currentScale - 0.25);
+                if (currentScale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+            }
+        }
+
+        // колесико мыши
+        function onWheel(e) {
+            if (!modal.classList.contains('active')) return;
+            e.preventDefault();
+            if (e.deltaY < 0) zoomIn();
+            else zoomOut();
+        }
+
+        // перетаскивание (drag)
+        let isDragging = false;
+        let startX, startY, startTranslateX, startTranslateY;
+
+        function onMouseDown(e) {
+            if (currentScale <= 1) return;
+            e.preventDefault();
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startTranslateX = translateX;
+            startTranslateY = translateY;
+            modalImg.style.cursor = 'grabbing';
+        }
+
+        function onMouseMove(e) {
+            if (!isDragging) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            translateX = startTranslateX + dx;
+            translateY = startTranslateY + dy;
+            updateTransform();
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+            modalImg.style.cursor = 'grab';
+        }
+
+        // тач для мобильных
+        function onTouchStart(e) {
+            if (currentScale <= 1) return;
+            if (e.touches.length === 1) {
+                e.preventDefault();
+                isDragging = true;
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                startTranslateX = translateX;
+                startTranslateY = translateY;
+            }
+        }
+
+        function onTouchMove(e) {
+            if (!isDragging || currentScale <= 1) return;
+            if (e.touches.length === 1) {
+                e.preventDefault();
+                const dx = e.touches[0].clientX - startX;
+                const dy = e.touches[0].clientY - startY;
+                translateX = startTranslateX + dx;
+                translateY = startTranslateY + dy;
+                updateTransform();
+            }
+        }
+
+        function onTouchEnd() {
+            isDragging = false;
+        }
+
+        function openModalWithZoom(src) {
+            modalImg.src = src;
+            resetZoom();
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            resetZoom();
+        }
+
+        // ---------- НАВИГАЦИЯ ----------
+        const pages = {
+            gallery: document.getElementById('galleryPage'),
+            fullworks: document.getElementById('fullworksPage'),
+            sketches: document.getElementById('sketchesPage'),
+            about: document.getElementById('aboutPage'),
+            contacts: document.getElementById('contactsPage')
+        };
+        const titles = {
+            gallery: 'Галерея',
+            fullworks: 'Полноценные работы',
+            sketches: 'Наброски',
+            about: 'Об авторе',
+            contacts: 'Контакты'
+        };
+
+        function switchPage(pageId) {
+            Object.values(pages).forEach(p => p?.classList.remove('active-page'));
+            if (pages[pageId]) pages[pageId].classList.add('active-page');
+            document.getElementById('dynamicTitle').innerText = titles[pageId];
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if (item.getAttribute('data-page') === pageId) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => switchPage(item.getAttribute('data-page')));
+        });
+
+        // ---------- ЗАПУСК ----------
+        renderGallery('galleryContainer', allImages);
+        renderGallery('fullworksContainer', fullImages);
+        renderGallery('sketchesContainer', sketchImages);
+        renderGallery('featuredContainer', featuredImages);
+
+        document.querySelector('.nav-item[data-page="gallery"]').classList.add('active');
+
+        // события модалки
+        const closeBtn = document.getElementById('closeModalBtn');
+        closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+        modalImg.addEventListener('wheel', onWheel, { passive: false });
+        modalImg.addEventListener('mousedown', onMouseDown);
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+        modalImg.addEventListener('touchstart', onTouchStart, { passive: false });
+        window.addEventListener('touchmove', onTouchMove, { passive: false });
+        window.addEventListener('touchend', onTouchEnd);
+        modalImg.style.cursor = 'grab';
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+        });
+    </script>
+</body>
+</html>
